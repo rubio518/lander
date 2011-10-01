@@ -12,23 +12,24 @@ public final class R {
     }
     public static final class drawable {
         public static final int back=0x7f020000;
-        public static final int f=0x7f020001;
+        public static final int explosion=0x7f020001;
         public static final int fondo=0x7f020002;
-        public static final int icon=0x7f020003;
-        public static final int nave=0x7f020004;
-        public static final int naveon=0x7f020005;
-        public static final int speed=0x7f020006;
-        public static final int speed_item=0x7f020007;
-        public static final int stars=0x7f020008;
-        public static final int vida0=0x7f020009;
-        public static final int vida1=0x7f02000a;
-        public static final int vida2=0x7f02000b;
-        public static final int vida3=0x7f02000c;
-        public static final int vida4=0x7f02000d;
-        public static final int vida5=0x7f02000e;
-        public static final int vida6=0x7f02000f;
-        public static final int vida7=0x7f020010;
-        public static final int vidafull=0x7f020011;
+        public static final int galaxy=0x7f020003;
+        public static final int icon=0x7f020004;
+        public static final int nave=0x7f020005;
+        public static final int naveon=0x7f020006;
+        public static final int speed=0x7f020007;
+        public static final int speed_item=0x7f020008;
+        public static final int stars=0x7f020009;
+        public static final int vida0=0x7f02000a;
+        public static final int vida1=0x7f02000b;
+        public static final int vida2=0x7f02000c;
+        public static final int vida3=0x7f02000d;
+        public static final int vida4=0x7f02000e;
+        public static final int vida5=0x7f02000f;
+        public static final int vida6=0x7f020010;
+        public static final int vida7=0x7f020011;
+        public static final int vidafull=0x7f020012;
     }
     public static final class layout {
         public static final int main=0x7f030000;

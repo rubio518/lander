@@ -24,6 +24,9 @@ import android.view.WindowManager;
 
 public class LanderActivity extends Activity {
 	private int a = 1;
+	private boolean started = false;
+	private boolean exploTop = false;
+	private boolean exploBot = false;
     private int y= 200; 
     private float mAccelX = 1;
     private float mAccelY = 0;
@@ -33,7 +36,9 @@ public class LanderActivity extends Activity {
     private int itemSize = 0;
     private int naveWidth = 0;
     private int naveHeight = 0;
-    private int[] colisiones;
+    private int[] colisionesBot;
+    private int[] colisionesTop;
+    
     private SensorManager mSensorManager;
     private Sensor mAccelerometer;
 
@@ -98,6 +103,8 @@ public class LanderActivity extends Activity {
         
         private boolean speedSaved = false;
         private Rect recf = new Rect(0,0,800,480);
+        private Rect reca = new Rect(0,0,800,480);
+        
         private long l;
         private Bitmap speed;
         private Bitmap speedItem;
@@ -115,6 +122,7 @@ public class LanderActivity extends Activity {
         private Bitmap vida6;
         private Bitmap vida7;
         private Bitmap vida8;
+        private Bitmap explosion;
         private int pixel;
         
         
@@ -130,10 +138,9 @@ public class LanderActivity extends Activity {
             mSensorManager.registerListener(mSensorAccelerometer,mAccelerometer , SensorManager.SENSOR_DELAY_UI);
             
             ml = new mainLoop(getHolder(), this);
-            naveOff = BitmapFactory.decodeResource(getResources(), R.drawable.nave);
-            naveOn = BitmapFactory.decodeResource(getResources(), R.drawable.naveon);
+            
             fondo = BitmapFactory.decodeResource(getResources(), R.drawable.back);
-            stars = BitmapFactory.decodeResource(getResources(), R.drawable.stars);
+            stars = BitmapFactory.decodeResource(getResources(), R.drawable.galaxy);
             speed = BitmapFactory.decodeResource(getResources(), R.drawable.speed);
             speedItem = BitmapFactory.decodeResource(getResources(), R.drawable.speed_item);
             vida1 = BitmapFactory.decodeResource(getResources(), R.drawable.vida1);
@@ -144,10 +151,14 @@ public class LanderActivity extends Activity {
             vida6 = BitmapFactory.decodeResource(getResources(), R.drawable.vida6);
             vida7 = BitmapFactory.decodeResource(getResources(), R.drawable.vida7);
             vida8 = BitmapFactory.decodeResource(getResources(), R.drawable.vidafull);
+            explosion = BitmapFactory.decodeResource(getResources(), R.drawable.explosion);
+            
             vida = vida8;
             
             //---------------------------------------
-            colisiones = llenarVector();
+            colisionesBot = llenarVectorBot();
+            colisionesTop = llenarVectorTop();
+            
             //pixel = fondo.getPixel(20, 200);
             //---------------------------------------
             nave = naveOff;
@@ -190,15 +201,18 @@ public class LanderActivity extends Activity {
         public void onDraw(Canvas canvas) {
         	
             
-        	canvas.drawBitmap(stars,rec, recStars1,null);
-        	canvas.drawBitmap(stars, rec, recStars2, null);
+        	canvas.drawBitmap(stars,recf, recStars1,null);
+        	canvas.drawBitmap(stars, recf, recStars2, null);
         	//                       src   dst
         	canvas.drawBitmap(fondo, rec, recf, null);
         	
         	canvas.rotate(rot,x+ 45,y+50);
         	canvas.drawBitmap(nave,x, y, null);
             canvas.rotate(-rot,x+45,y+50);
-       
+            if(exploTop)
+            	canvas.drawBitmap(explosion, x, y-50, null);
+            if(exploBot)
+            	canvas.drawBitmap(explosion, x, y+naveHeight, null);
             canvas.drawBitmap(vida,200, 20, null);
             canvas.drawText(y+"|", 20, 20,paint);
             if(!speedSaved)
@@ -244,19 +258,33 @@ public class LanderActivity extends Activity {
         }
         
         // mis metodos---------------------------------------------------
-        public int[] llenarVector(){
+        public int[] llenarVectorBot(){
         	int[] x = new int[100];
         	int pix = 0;
         	for(int i = 0;i<100;i++){
-        		for(int j = 200;j<480;j++){
+        		for(int j = 479;j>0;j--){
         			pix = fondo.getPixel(i*10, j);
-        			if(pix < 0){
+        			if(pix == 0){
         				x[i] = j;
         				break;
         			}
         		}
         	}
         	
+        	return x;
+        }
+        public int[] llenarVectorTop(){
+        	int[] x = new int[100];
+        	int pix = 0;
+        	for(int i = 0;i<100;i++){
+        		for(int j = 0;j<479;j++){
+        			pix = fondo.getPixel(i*10, j);
+        			if(pix == 0){
+        				x[i] = j;
+        				break;
+        			}
+        		}
+        	}
         	
         	return x;
         }
@@ -323,17 +351,20 @@ public class LanderActivity extends Activity {
         	int contI = 0;
         	int dir = 1;
         	int vida = 8;
-        	
+        	int contExplo = 0;
+        	int xReal = x;
         	int xvector1,xvector2 = 0;
+        	int dx = (int) mAccelY;
             Canvas c;
             while (_run) {
                 c = null;
                 try {
-                	
+                	dx = (int)mAccelY;
                      c = _surfaceHolder.lockCanvas(null);
                     
                     synchronized (_surfaceHolder) {
                     	if(a != MotionEvent.ACTION_UP){
+                    		started = true;
                     		_panel.change(true);
                     		if(cont < 180){
                     			cont++;
@@ -342,7 +373,8 @@ public class LanderActivity extends Activity {
                     		y -= 0.1*cont;
                     	
                     		//mover background -------------------------
-                    		/*recStars2.offset(-10, 0);
+                    		/*
+                    		recStars2.offset(-10, 0);
                     		recStars1.offset(-10, 0);
                     		if(recStars1.right <= 0){
                     			recStars1.offset(1600, 0);
@@ -354,7 +386,8 @@ public class LanderActivity extends Activity {
                     	}else{
                     		cont = 0;
                     		y+= 0.1*cont2;
-                    		cont2++;
+                    		if(started)
+                    			cont2++;
                     		_panel.change(false);
                     	}
                     	
@@ -370,24 +403,49 @@ public class LanderActivity extends Activity {
                     		_panel.item(true);
                     	}
                     	//------
-                    	xvector1 = x/10;
-                    	xvector2 = (x+naveWidth)/10;
+                    	xvector1 = xReal/10;
+                    	xvector2 = (xReal+naveWidth)/10;
                     	
                     
-                    	if((y+naveHeight> colisiones[xvector1])||(y+naveHeight>colisiones[xvector2])){
+                    	if((y+naveHeight> colisionesBot[xvector1])||(y+naveHeight>colisionesBot[xvector2])){
                     		vida--;
                     		_panel.vida(vida);
                     		y -= 50;
+                    		cont = 0;
+                    		cont2 = 0;
+                    		exploBot = true;
+                    		contExplo = 0;
                     	}
+                    	if((y< colisionesTop[xvector1+4])){
+                    		vida--;
+                    		_panel.vida(vida);
+                    		y += 50;
+                    		cont = 0;
+                    		cont2 = 0;
+                    		exploTop = true;
+                    		contExplo = 0;
+                    	}
+                    	if(contExplo < 10){
+                    	contExplo++;
+                    	}
+                    	if(contExplo==10){
+                    	exploBot = false;
+                    	exploTop = false;
                     	
-                    	
-                    	
+                    	}
                     	//--------------------------------------------------------------------------------
-                    	
-                    	x=(int) (mAccelY +x);
-                    	rot = (float) (mAccelY*5.0);
+                    	xReal = (dx + xReal);
+                    	if((x>600)&&(dx > 0 )){
+                    		rec.offset(dx, 0);
+                    		recStars2.offset(-dx, 0);
+                    		recStars1.offset(-dx, 0);
+                    	}else{
+                    		x= (dx +x);
+                    	}
+                    	rot = (float) (dx*5.0);
                     	//c.setBitmap(fondo);
                         _panel.onDraw(c);
+                        
                     }
                 } finally {
                     // do| this in a finally so that if an exception is thrown
