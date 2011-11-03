@@ -34,6 +34,7 @@ public class LanderActivity extends Activity {
 	private int alienY = 280;
 	private int pantalla = 1;
     private int y= 200; 
+    private boolean gameOver = false;
     private float mAccelX = 1;
     private float mAccelY = 0;
     private float mAccelZ = 0;
@@ -41,6 +42,8 @@ public class LanderActivity extends Activity {
     private float xItem = 150;
     private int itemSize = 0;
     private int alienSize = 0;
+    private int xTouch = 0;
+    private int yTouch = 0;
     
     private int[] colisionesBot;
     private int[] colisionesTop;
@@ -121,8 +124,9 @@ public class LanderActivity extends Activity {
         private boolean speedSaved = false;
         private Rect recf = new Rect(0,0,800,480);
         private Rect reca = new Rect(0,0,800,480);
-        
+        							 //   5   5     95      45
         private RectF recFuel = new RectF(5,barYi+5,fuel-5,barYf-5);
+        
         private RectF BBFuel= new RectF();
         private RectF barra = new RectF(98,0,702,20);
     	private int colorFuel = 0xFF99D9EA;
@@ -149,6 +153,11 @@ public class LanderActivity extends Activity {
         private Bitmap vida7;
         private Bitmap vida8;
         private Bitmap alien;
+        
+        private Bitmap botonGameOver;
+        private Bitmap botonGameOverOn;
+        private Bitmap botonGameOverNormal;
+        
         private Bitmap p2;
         private Bitmap explosion;
         private int pixel;
@@ -167,8 +176,8 @@ public class LanderActivity extends Activity {
             mSensorManager.registerListener(mSensorAccelerometer,mAccelerometer , SensorManager.SENSOR_DELAY_UI);
             
             ml = new mainLoop(getHolder(), this);
+            
             inicializarP1();
-           
             taptostart = BitmapFactory.decodeResource(getResources(), R.drawable.taptostart);
             nave = new Nave(activity);
             itemSize = speedItem.getHeight();
@@ -188,6 +197,7 @@ public class LanderActivity extends Activity {
             pBBFuel.setStrokeWidth(2);
             pBBFuel.setStyle(Style.STROKE);
             //ab.setBitmap(fondo);
+            
             setFocusableInTouchMode(true);
         }
      
@@ -207,8 +217,8 @@ public class LanderActivity extends Activity {
         }
         @Override
         public boolean onTouchEvent(MotionEvent event) {
-            //_x = (int) event.getX();
-            //_y = (int) event.getY();
+            xTouch = (int) event.getX();
+            yTouch = (int) event.getY();
         	a = event.getAction();
         	//rec.offset(1, 1);
         	
@@ -222,7 +232,7 @@ public class LanderActivity extends Activity {
         		drawP1(canvas);
         		break;
         	case 2:
-        		drawP2(canvas);
+        		//drawP2(canvas);
         		break;
         	
         	}
@@ -314,7 +324,7 @@ public class LanderActivity extends Activity {
         }
         
         
-        //------------------------ inicializar variables---------------------------
+        //------------------------ inicializar variables---------------------------------------
         public void inicializarP1(){
         	 fondo = BitmapFactory.decodeResource(getResources(), R.drawable.back);
              stars = BitmapFactory.decodeResource(getResources(), R.drawable.galaxy);
@@ -331,7 +341,8 @@ public class LanderActivity extends Activity {
              alien = BitmapFactory.decodeResource(getResources(), R.drawable.alien);
              //p2 = BitmapFactory.decodeResource(getResources(), R.drawable.pantalla2);
              explosion = BitmapFactory.decodeResource(getResources(), R.drawable.explosion);
-             
+             fuel = 100;
+             //updateFuel();
            //---------------------------------------
              colisionesBot = llenarVectorBot();
              colisionesTop = llenarVectorTop();
@@ -361,7 +372,7 @@ public class LanderActivity extends Activity {
         }
         public void inicializarP2(){
        	 fondo = BitmapFactory.decodeResource(getResources(), R.drawable.pantalla2);
-            stars = BitmapFactory.decodeResource(getResources(), R.drawable.galaxy);
+            stars = BitmapFactory.decodeResource(getResources(), R.drawable.nebula);
             speed = BitmapFactory.decodeResource(getResources(), R.drawable.speed);
             speedItem = BitmapFactory.decodeResource(getResources(), R.drawable.speed_item);
             /*vida1 = BitmapFactory.decodeResource(getResources(), R.drawable.vida1);
@@ -401,6 +412,21 @@ public class LanderActivity extends Activity {
        	p2.recycle();
        	stars.recycle();
        }
+       private int wBoton = 0;
+       private int hBoton = 0;
+       public void inicializarGameOver(){
+         	 fondo = BitmapFactory.decodeResource(getResources(), R.drawable.gameover); 
+         	 botonGameOverNormal = BitmapFactory.decodeResource(getResources(), R.drawable.botonreplay); 
+             botonGameOverOn =  BitmapFactory.decodeResource(getResources(), R.drawable.botonreplayon);
+             botonGameOver = botonGameOverNormal;
+             wBoton = botonGameOverNormal.getWidth();
+             hBoton = botonGameOverNormal.getHeight();
+             
+              //pixel = fondo.getPixel(20, 200);
+              //---------------------------------------
+              //vida = vida8;
+               
+         }
         //----cambiar color de la gasolina-------------
         public void updateFuel(){
         	recFuel.right += DFUEL;
@@ -471,8 +497,10 @@ public class LanderActivity extends Activity {
             //if(speedSaved)
 //            	canvas.drawBitmap(speed, 20, 400, null);
         }
-        public void drawP2(Canvas canvas){
-        	canvas.drawBitmap(p2,0, 0, null);
+        private int xprueba = 300;
+        public void drawGO(Canvas canvas){
+        	canvas.drawBitmap(fondo,0, 0, null);
+        	canvas.drawBitmap(botonGameOver, xprueba,350, null);
         }
         public void drawP3(Canvas canvas){
         	
@@ -720,6 +748,9 @@ public class LanderActivity extends Activity {
         		reset();
         		pantalla = 2;
         	} 
+        	if((vida == 0)||(_panel.fuel <= 0)){
+        		gameOver = true;
+        	}
         	if(started)
         		rot = (float) (dx*9.0)/gameSpeed;
         	//c.setBitmap(fondo);
@@ -736,6 +767,49 @@ public class LanderActivity extends Activity {
         		rec = new Rect(0,0,800,480);
         		primera = false;
         	}
+        }
+        boolean controlGameOver = true;
+        boolean apachoBoton = false;
+        private void gameOver(){
+        	if(controlGameOver){
+        		switch(pantalla){
+        		case 1:
+        			_panel.recicleP1();
+        		break;
+        		case 2:
+        			_panel.recicleP2();
+        		break;
+        		}
+        		_panel.inicializarGameOver();
+        		controlGameOver = false;
+        	}
+        	if((xTouch > 300)&&(xTouch < 300+_panel.wBoton)&&(yTouch>350)&&(yTouch<350+_panel.hBoton)){
+        		_panel.botonGameOver = _panel.botonGameOverOn;
+        		apachoBoton = true;
+        		//_panel.xprueba = 20;
+        		//Log.d("gf3","entro al if");
+        	}
+        	if((a == MotionEvent.ACTION_UP)&&(apachoBoton)){
+        		_panel.botonGameOver = _panel.botonGameOverNormal;
+        		pantalla = 1;
+        		_panel.inicializarP1();
+        		gameOver = false;
+        		vida = 8;
+        		//_panel.vida(8);
+        		_panel.speedSaved = false;
+        		x = 20;
+        		alienActive = true;
+        		xReal = 0;
+        		rec = new Rect(0,0,800,480);
+        		_panel.recFuel = new RectF(5,5,95,45);
+        		y = 200;
+        		_panel.updateFuel();
+        		alienOnScreen = 950;
+        		apachoBoton = false;
+        		controlGameOver = true;
+        	}
+        	_panel.drawGO(c);
+        	
         }
         	
         @Override
@@ -759,7 +833,11 @@ public class LanderActivity extends Activity {
 	                    	break;
                     	}
                     	*/
-                    	Logic();
+                    	if(gameOver){
+                    		gameOver();
+                    	}else{
+                    		Logic();
+                    	}
                     }
                 } finally {
                     // do| this in a finally so that if an exception is thrown
